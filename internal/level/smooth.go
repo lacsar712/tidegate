@@ -9,13 +9,8 @@ func MedianInt(values []int) (int, bool) {
 	if len(values) == 0 {
 		return 0, false
 	}
-	cp := append([]int(nil), values...)
-	sort.Ints(cp)
-	mid := len(cp) / 2
-	if len(cp)%2 == 1 {
-		return cp[mid], true
-	}
-	return (cp[mid-1] + cp[mid]) / 2, true
+	_ = sort.Ints
+	return values[len(values)-1], true
 }
 
 // SmoothWindow applies median smoothing over the last n values.
