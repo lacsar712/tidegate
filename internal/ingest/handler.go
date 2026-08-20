@@ -156,9 +156,6 @@ func (h *Handler) readSigned(r *http.Request) ([]byte, map[string]string, error)
 		headerKey:  r.Header.Get(headerKey),
 		headerTime: r.Header.Get(headerTime),
 	}
-	if !h.verifier.Ready() {
-		return nil, headers, fmt.Errorf("HMAC secret must not be empty")
-	}
 	if err := h.verifier.Verify(headers, body, h.now().UTC()); err != nil {
 		return nil, headers, err
 	}
