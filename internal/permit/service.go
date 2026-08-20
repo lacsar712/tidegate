@@ -159,12 +159,8 @@ func (s *Service) Consume(ticketID string, now time.Time) (model.PermitTicket, e
 	if _, exists := s.nonces[ticket.Nonce]; exists {
 		return model.PermitTicket{}, fmt.Errorf("duplicate nonce")
 	}
-	if err := s.ledger.Spend(ticket.Nonce, now); err != nil {
-		return model.PermitTicket{}, err
-	}
 	ticket.Used = true
 	s.tickets[ticketID] = ticket
-	s.nonces[ticket.Nonce] = struct{}{}
 	return ticket, nil
 }
 
