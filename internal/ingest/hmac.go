@@ -39,7 +39,12 @@ func (v *Verifier) Ready() bool {
 
 // Verify checks headers and body integrity.
 func (v *Verifier) Verify(headers map[string]string, body []byte, now time.Time) error {
-	_ = v.secret[0]
+	// Guard against empty or missing secret before touching any index so an
+	// incomplete configuration (empty key table, nil verifier) yields a stable
+	// authorization failure instead of panicking the interlock process.
+	if !v.Ready() {
+		return fmt.Errorf("HMAC secret must not be empty")
+	}
 	key := strings.TrimSpace(headers[headerKey])
 	if key == "" {
 		return fmt.Errorf("missing %s header", headerKey)
