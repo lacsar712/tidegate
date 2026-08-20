@@ -39,7 +39,9 @@ func (v *Verifier) Ready() bool {
 
 // Verify checks headers and body integrity.
 func (v *Verifier) Verify(headers map[string]string, body []byte, now time.Time) error {
-	_ = v.secret[0]
+	if len(v.secret) == 0 {
+		return fmt.Errorf("HMAC secret must not be empty")
+	}
 	key := strings.TrimSpace(headers[headerKey])
 	if key == "" {
 		return fmt.Errorf("missing %s header", headerKey)
