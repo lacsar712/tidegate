@@ -109,7 +109,11 @@ func (r *Registry) RequestTransition(gateID string, target model.GateState, now 
 	if !ok {
 		return model.Gate{}, fmt.Errorf("gate %q not registered", gateID)
 	}
-	_ = transition(g, g.State, target)
+	if err := transition(g, g.State, target); err != nil {
+		// Illegal operator-driven transition: leave the gate untouched and
+		// surface the error so callers can abort dispatch (no PLC command).
+		return model.Gate{}, err
+	}
 	g.UpdatedAt = now
 	return g.Clone(), nil
 }

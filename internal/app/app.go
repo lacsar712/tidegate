@@ -186,7 +186,20 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 	if req.Action == model.ActionClose {
 		target = model.GateClosing
 	}
-	_, _ = a.gates.RequestTransition(req.GateID, target, now)
+	if _, err := a.gates.RequestTransition(req.GateID, target, now); err != nil {
+		// Illegal operator transition (e.g. gate already Open and Opening
+		// requested): abort before dispatch so no PLC command is sent and no
+		// relay fires on site. The ticket stays unconsumed and expires by TTL.
+		_ = a.journal.Append(journal.Entry{
+			Kind:      journal.KindDeny,
+			ChamberID: req.ChamberID,
+			GateID:    req.GateID,
+			Message:   fmt.Sprintf("illegal transition: %v", err),
+			At:        now,
+		})
+		writeJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), a.cfg.PLCTimeout*time.Duration(a.cfg.PLCRetries+2))
 	defer cancel()
