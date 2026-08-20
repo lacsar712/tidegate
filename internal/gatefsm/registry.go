@@ -127,7 +127,10 @@ func (r *Registry) ResetFault(gateID string, now time.Time) (model.Gate, error) 
 	if g.State != model.GateFault {
 		return model.Gate{}, fmt.Errorf("gate %q is not in fault state", gateID)
 	}
+	g.State = model.GateClosed
 	g.FaultCode = 0
+	g.OpenPercent = 0
+	g.InPosition = true
 	g.UpdatedAt = now
 	return g.Clone(), nil
 }
