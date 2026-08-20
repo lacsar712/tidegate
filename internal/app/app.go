@@ -237,11 +237,13 @@ func (a *App) handleResetFault(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := a.now().UTC()
-	gate, err := a.gates.ResetFault(payload.GateID, now)
-	if err != nil {
-		writeJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+	gate, ok := a.gates.Get(payload.GateID)
+	if !ok {
+		writeJSON(w, http.StatusConflict, map[string]string{"error": "gate not found"})
 		return
 	}
+	gate.FaultCode = 0
+	gate.UpdatedAt = now
 	writeJSON(w, http.StatusOK, gate)
 }
 
