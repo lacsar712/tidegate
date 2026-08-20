@@ -17,8 +17,16 @@ func NewNonceLedger(ttl time.Duration) *NonceLedger {
 	return &NonceLedger{spent: make(map[string]time.Time), ttl: ttl}
 }
 
-// Spend records a nonce as used at the provided time.
+// Spend records a nonce as used at the provided time. A nonce that is already
+// tracked is refused with ErrNonceReplay so the first consumption is the only
+// one the ledger accepts.
 func (l *NonceLedger) Spend(nonce string, at time.Time) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if _, ok := l.spent[nonce]; ok {
+		return ErrNonceReplay
+	}
+	l.spent[nonce] = at
 	return nil
 }
 

@@ -156,8 +156,11 @@ func (s *Service) Consume(ticketID string, now time.Time) (model.PermitTicket, e
 	if ticket.Expired(now) {
 		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketExpired)
 	}
-	if _, exists := s.nonces[ticket.Nonce]; exists {
-		return model.PermitTicket{}, fmt.Errorf("duplicate nonce")
+	if s.ledger.Seen(ticket.Nonce) {
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrNonceReplay)
+	}
+	if err := s.ledger.Spend(ticket.Nonce, now); err != nil {
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrNonceReplay)
 	}
 	ticket.Used = true
 	s.tickets[ticketID] = ticket
