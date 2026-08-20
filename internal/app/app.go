@@ -182,7 +182,10 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ticket := *result.Ticket
-	target := model.GateOpen
+	// Operator commands enter the in-motion posture first; the FSM forbids
+	// skipping Closed->Open, and Open is reached only after the encoder
+	// confirms full stroke via ApplyReport.
+	target := model.GateOpening
 	if req.Action == model.ActionClose {
 		target = model.GateClosing
 	}

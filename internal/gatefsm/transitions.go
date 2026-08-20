@@ -8,8 +8,10 @@ import (
 
 var allowed = map[model.GateState]map[model.GateState]bool{
 	model.GateClosed: {
+		// Opening must be entered first to confirm stroke; a direct
+		// Closed->Open jump is forbidden so the PLC never receives a
+		// full-open command without the in-motion posture.
 		model.GateOpening: true,
-		model.GateOpen:    true,
 		model.GateFault:   true,
 	},
 	model.GateOpening: {
