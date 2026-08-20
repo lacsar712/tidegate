@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidegate Operator Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Tidegate Operator Console</h1>
+    <p class="subtitle">Chamber interlock and head-diff monitoring</p>
+  </header>
+  <main>
+    <section id="status-panel">
+      <h2>Chamber Status</h2>
+      <div id="chambers"></div>
+    </section>
+    <section id="deny-panel">
+      <h2>Recent Denials</h2>
+      <ul id="deny-list"></ul>
+    </section>
+    <section id="actions">
+      <h2>Operations</h2>
+      <form id="open-form">
+        <label>
+          Chamber ID
+          <input type="text" id="chamber-id" value="chamber-1" required>
+        </label>
+        <label>
+          Gate ID
+          <select id="gate-id">
+            <option value="gate-upstream">gate-upstream</option>
+            <option value="gate-downstream">gate-downstream</option>
+          </select>
+        </label>
+        <label>
+          Action
+          <select id="action">
+            <option value="open">open</option>
+            <option value="close">close</option>
+          </select>
+        </label>
+        <button type="submit">Request Permit</button>
+      </form>
+      <pre id="action-result"></pre>
+    </section>
+  </main>
+  <footer>
+    <span id="generated-at">Loading…</span>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>
