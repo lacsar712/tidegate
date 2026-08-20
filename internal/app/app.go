@@ -193,7 +193,8 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), a.cfg.PLCTimeout*time.Duration(a.cfg.PLCRetries+2))
 	defer cancel()
-	outcome, err := a.dispatch.Send(ctx, ticket)
+	_ = ctx
+	outcome, err := a.dispatch.Send(context.Background(), ticket)
 	if err != nil {
 		_ = a.journal.Append(journal.Entry{
 			Kind:      journal.KindDispatch,

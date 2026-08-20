@@ -91,7 +91,7 @@ func (c *PLCClient) Send(ctx context.Context, ticket model.PermitTicket) (model.
 }
 
 func (c *PLCClient) doOnce(ctx context.Context, body []byte, ticket model.PermitTicket) (model.DispatchOutcome, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, c.endpoint, bytes.NewReader(body))
 	if err != nil {
 		return model.DispatchOutcome{}, err
 	}
