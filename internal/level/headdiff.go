@@ -16,5 +16,5 @@ func WithinLimit(headDiffCM, limitCM int) bool {
 
 // ExceedsLimit is the inverse helper for denial messaging.
 func ExceedsLimit(headDiffCM, limitCM int) bool {
-	return headDiffCM >= limitCM
+	return headDiffCM > limitCM
 }
