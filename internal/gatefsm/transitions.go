@@ -9,7 +9,6 @@ import (
 var allowed = map[model.GateState]map[model.GateState]bool{
 	model.GateClosed: {
 		model.GateOpening: true,
-		model.GateOpen:    true,
 		model.GateFault:   true,
 	},
 	model.GateOpening: {
