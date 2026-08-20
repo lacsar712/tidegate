@@ -42,7 +42,11 @@ func (m *Matrix) SetExclusive(a, b string, exclusive bool) error {
 	if !okA || !okB {
 		return fmt.Errorf("unknown gate in matrix")
 	}
+	// The matrix is symmetric: a conflict between a and b must hold in both
+	// directions, otherwise reverse queries (Exclusive(b, a)) would silently miss
+	// a relationship registered via SetExclusive(a, b).
 	m.cells[ia][ib] = exclusive
+	m.cells[ib][ia] = exclusive
 	return nil
 }
 
