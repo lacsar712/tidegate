@@ -141,8 +141,8 @@ func (s *Store) Ingest(report model.LevelReport, now time.Time) (upstream, downs
 		cl.Downstream.Add(sample)
 	}
 
-	up, okUp := cl.Upstream.Last()
-	down, okDown := cl.Downstream.Last()
+	up, okUp := cl.Upstream.Median()
+	down, okDown := cl.Downstream.Median()
 	if !okUp || !okDown {
 		return 0, 0, 0, fmt.Errorf("both probes require samples before smoothing")
 	}
@@ -157,8 +157,8 @@ func (s *Store) Snapshot(chamberID string) (upstream, downstream, headDiff int, 
 	if !exists {
 		return 0, 0, 0, false
 	}
-	up, okUp := cl.Upstream.Last()
-	down, okDown := cl.Downstream.Last()
+	up, okUp := cl.Upstream.Median()
+	down, okDown := cl.Downstream.Median()
 	if !okUp || !okDown {
 		return 0, 0, 0, false
 	}
