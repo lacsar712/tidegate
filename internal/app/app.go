@@ -301,10 +301,9 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func permitHTTPStatus(err error) int {
-	if err == permit.ErrTicketExpired {
+	if errors.Is(err, permit.ErrTicketExpired) {
 		return http.StatusGone
 	}
-	_ = errors.Is
 	return http.StatusConflict
 }
 

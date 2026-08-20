@@ -115,7 +115,7 @@ func (s *Service) ValidateTicket(ticketID string, gates []model.Gate, now time.T
 		return model.PermitTicket{}, fmt.Errorf("ticket already used")
 	}
 	if ticket.Expired(now) {
-		return model.PermitTicket{}, fmt.Errorf("%v", ErrTicketExpired)
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketExpired)
 	}
 	if _, seen := s.nonces[ticket.Nonce]; seen {
 		return model.PermitTicket{}, fmt.Errorf("nonce conflict")
@@ -154,7 +154,7 @@ func (s *Service) Consume(ticketID string, now time.Time) (model.PermitTicket, e
 		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketUsed)
 	}
 	if ticket.Expired(now) {
-		return model.PermitTicket{}, fmt.Errorf("%v", ErrTicketExpired)
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketExpired)
 	}
 	if _, exists := s.nonces[ticket.Nonce]; exists {
 		return model.PermitTicket{}, fmt.Errorf("duplicate nonce")
