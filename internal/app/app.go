@@ -182,7 +182,7 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ticket := *result.Ticket
-	target := model.GateOpening
+	target := model.GateOpen
 	if req.Action == model.ActionClose {
 		target = model.GateClosing
 	}
