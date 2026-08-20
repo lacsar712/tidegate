@@ -51,7 +51,7 @@ func (s *Service) EvaluateOpenRequest(req model.OpenRequest, gates []model.Gate,
 	if !ok {
 		return model.PermitResult{Allowed: false, Deny: deny("LEVEL_UNAVAILABLE", "smoothed levels not ready", req.ChamberID, req.GateID, now)}
 	}
-	if head >= s.headLimit {
+	if level.ExceedsLimit(head, s.headLimit) {
 		msg := fmt.Sprintf("head diff %dcm exceeds limit %dcm (up=%d down=%d)", head, s.headLimit, up, down)
 		return model.PermitResult{Allowed: false, Deny: deny("HEAD_DIFF", msg, req.ChamberID, req.GateID, now)}
 	}
