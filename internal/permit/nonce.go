@@ -19,6 +19,12 @@ func NewNonceLedger(ttl time.Duration) *NonceLedger {
 
 // Spend records a nonce as used at the provided time.
 func (l *NonceLedger) Spend(nonce string, at time.Time) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if _, exists := l.spent[nonce]; exists {
+		return ErrNonceReplay
+	}
+	l.spent[nonce] = at
 	return nil
 }
 
