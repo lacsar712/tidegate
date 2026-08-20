@@ -32,8 +32,16 @@ func NewVerifier(secret string, skewSec int) (*Verifier, error) {
 	return &Verifier{secret: secret, skewSec: skewSec}, nil
 }
 
+// Ready reports whether the verifier has a usable secret.
+func (v *Verifier) Ready() bool {
+	return v != nil && len(v.secret) > 0
+}
+
 // Verify checks headers and body integrity.
 func (v *Verifier) Verify(headers map[string]string, body []byte, now time.Time) error {
+	if len(v.secret) == 0 {
+		return fmt.Errorf("HMAC secret must not be empty")
+	}
 	key := strings.TrimSpace(headers[headerKey])
 	if key == "" {
 		return fmt.Errorf("missing %s header", headerKey)

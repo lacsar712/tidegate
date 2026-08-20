@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -206,7 +207,7 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 	}
 	consumed, err := a.permits.Consume(ticket.ID, now)
 	if err != nil {
-		writeJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+		writeJSON(w, permitHTTPStatus(err), map[string]string{"error": err.Error()})
 		return
 	}
 	_ = a.journal.Append(journal.Entry{
@@ -299,6 +300,13 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
+func permitHTTPStatus(err error) int {
+	if errors.Is(err, permit.ErrTicketExpired) {
+		return http.StatusGone
+	}
+	return http.StatusConflict
+}
+
 // IngestLevel is a test helper that applies level samples through the store and snapshot.
 func (a *App) IngestLevel(report model.LevelReport) error {
 	now := a.now().UTC()
@@ -314,6 +322,26 @@ func (a *App) IngestLevel(report model.LevelReport) error {
 	}
 	a.chamberMu.Unlock()
 	return nil
+}
+
+// Gates exposes the gate registry for tests.
+func (a *App) Gates() *gatefsm.Registry {
+	return a.gates
+}
+
+// Permits exposes the permit service for tests.
+func (a *App) Permits() *permit.Service {
+	return a.permits
+}
+
+// Dispatch exposes the PLC client for tests.
+func (a *App) Dispatch() *dispatch.PLCClient {
+	return a.dispatch
+}
+
+// SetDispatch replaces the PLC client (tests only).
+func (a *App) SetDispatch(c *dispatch.PLCClient) {
+	a.dispatch = c
 }
 
 // SetNow replaces the clock function for tests.

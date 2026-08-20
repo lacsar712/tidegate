@@ -45,16 +45,22 @@ func TestRegistryApplyReport(t *testing.T) {
 	}
 }
 
-func TestResetFault(t *testing.T) {
+func TestResetFaultClearsAllFields(t *testing.T) {
 	reg := gatefsm.NewRegistry()
-	reg.Register(model.Gate{ID: "g1", ChamberID: "c1", State: model.GateFault, FaultCode: 42})
+	reg.Register(model.Gate{
+		ID: "g1", ChamberID: "c1", State: model.GateFault,
+		FaultCode: 42, OpenPercent: 55, InPosition: false,
+	})
 	now := time.Now().UTC()
 	g, err := reg.ResetFault("g1", now)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if g.State != model.GateClosed || g.FaultCode != 0 {
-		t.Fatalf("unexpected reset state %+v", g)
+	if g.State != model.GateClosed {
+		t.Fatalf("ResetFault must return Closed state, got %s", g.State)
+	}
+	if g.FaultCode != 0 || g.OpenPercent != 0 || !g.InPosition {
+		t.Fatalf("ResetFault must clear faultCode/openPercent/inPosition; got %+v", g)
 	}
 }
 

@@ -20,6 +20,7 @@ type Service struct {
 	bypassEnabled bool
 	bypassToken   string
 	nonces        map[string]struct{}
+	ledger        *NonceLedger
 	tickets       map[string]model.PermitTicket
 	levels        *level.Store
 	interlock     *interlock.Evaluator
@@ -33,6 +34,7 @@ func NewService(levels *level.Store, evaluator *interlock.Evaluator, headLimit i
 		bypassEnabled: bypassEnabled,
 		bypassToken:   bypassToken,
 		nonces:        make(map[string]struct{}),
+		ledger:        NewNonceLedger(ttl),
 		tickets:       make(map[string]model.PermitTicket),
 		levels:        levels,
 		interlock:     evaluator,
@@ -113,10 +115,13 @@ func (s *Service) ValidateTicket(ticketID string, gates []model.Gate, now time.T
 		return model.PermitTicket{}, fmt.Errorf("ticket already used")
 	}
 	if ticket.Expired(now) {
-		return model.PermitTicket{}, fmt.Errorf("ticket expired")
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketExpired)
 	}
 	if _, seen := s.nonces[ticket.Nonce]; seen {
 		return model.PermitTicket{}, fmt.Errorf("nonce conflict")
+	}
+	if s.ledger.Seen(ticket.Nonce) {
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrNonceReplay)
 	}
 
 	_, _, head, ok := s.levels.Snapshot(ticket.ChamberID)
@@ -146,18 +151,26 @@ func (s *Service) Consume(ticketID string, now time.Time) (model.PermitTicket, e
 		return model.PermitTicket{}, fmt.Errorf("ticket not found")
 	}
 	if ticket.Used {
-		return model.PermitTicket{}, fmt.Errorf("ticket already used")
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketUsed)
 	}
 	if ticket.Expired(now) {
-		return model.PermitTicket{}, fmt.Errorf("ticket expired")
+		return model.PermitTicket{}, fmt.Errorf("%w", ErrTicketExpired)
 	}
 	if _, exists := s.nonces[ticket.Nonce]; exists {
 		return model.PermitTicket{}, fmt.Errorf("duplicate nonce")
+	}
+	if err := s.ledger.Spend(ticket.Nonce, now); err != nil {
+		return model.PermitTicket{}, err
 	}
 	ticket.Used = true
 	s.tickets[ticketID] = ticket
 	s.nonces[ticket.Nonce] = struct{}{}
 	return ticket, nil
+}
+
+// NonceSeen reports whether a permit nonce was recorded as spent.
+func (s *Service) NonceSeen(nonce string) bool {
+	return s.ledger.Seen(nonce)
 }
 
 // Get returns a ticket by id.

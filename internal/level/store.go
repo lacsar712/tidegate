@@ -62,6 +62,14 @@ func (b *ProbeBuffer) Count() int {
 	return len(b.samples)
 }
 
+// Last returns the most recently added sample level without smoothing.
+func (b *ProbeBuffer) Last() (int, bool) {
+	if len(b.samples) == 0 {
+		return 0, false
+	}
+	return b.samples[len(b.samples)-1].LevelCM, true
+}
+
 // ChamberLevels tracks upstream and downstream probe buffers.
 type ChamberLevels struct {
 	Upstream   *ProbeBuffer
