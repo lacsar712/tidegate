@@ -43,6 +43,7 @@ func (m *Matrix) SetExclusive(a, b string, exclusive bool) error {
 		return fmt.Errorf("unknown gate in matrix")
 	}
 	m.cells[ia][ib] = exclusive
+	m.cells[ib][ia] = exclusive
 	return nil
 }
 
@@ -58,7 +59,7 @@ func (m *Matrix) Exclusive(a, b string) (bool, error) {
 	if !okA || !okB {
 		return false, fmt.Errorf("unknown gate in matrix")
 	}
-	return m.cells[ia][ib], nil
+	return m.cells[ia][ib] || m.cells[ib][ia], nil
 }
 
 // GateIDs returns the ordered gate identifiers managed by the matrix.
