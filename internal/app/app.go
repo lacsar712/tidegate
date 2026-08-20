@@ -186,7 +186,10 @@ func (a *App) handleRequestOpen(w http.ResponseWriter, r *http.Request) {
 	if req.Action == model.ActionClose {
 		target = model.GateClosing
 	}
-	_, _ = a.gates.RequestTransition(req.GateID, target, now)
+	if _, err := a.gates.RequestTransition(req.GateID, target, now); err != nil {
+		writeJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), a.cfg.PLCTimeout*time.Duration(a.cfg.PLCRetries+2))
 	defer cancel()
