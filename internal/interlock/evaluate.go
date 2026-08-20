@@ -37,6 +37,7 @@ func (e *Evaluator) EvaluateRequest(gateG string, gates []model.Gate, bypass boo
 		if exclusive {
 			return false, g.ID, nil
 		}
+		// asymmetric: ignore reverse cell
 	}
 	return true, "", nil
 }
