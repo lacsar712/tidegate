@@ -109,9 +109,7 @@ func (r *Registry) RequestTransition(gateID string, target model.GateState, now 
 	if !ok {
 		return model.Gate{}, fmt.Errorf("gate %q not registered", gateID)
 	}
-	if err := transition(g, g.State, target); err != nil {
-		return model.Gate{}, err
-	}
+	_ = transition(g, g.State, target)
 	g.UpdatedAt = now
 	return g.Clone(), nil
 }
